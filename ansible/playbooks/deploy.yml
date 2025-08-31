@@ -1,0 +1,17 @@
+---
+- name: Deploy Wazuh Stack to Docker Swarm
+  hosts: localhost  # Assuming you're deploying to the local Swarm
+  connection: local
+  tasks:
+    - name: Ensure overlay network exists
+      community.docker.docker_network:
+        name: wazuh_net
+        driver: overlay
+        scope: swarm
+
+    - name: Deploy Stack
+      community.docker.docker_stack:
+        state: present
+        name: wazuh
+        compose:
+          - /home/your-user/wazuh-CICD/stack/wazuh-stack.yml

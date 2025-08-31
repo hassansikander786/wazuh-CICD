@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  wazuh.indexer:
+    image: wazuh/wazuh-indexer:4.12.0
+    configs:
+      - source: indexer_config
+        target: /usr/share/wazuh-indexer/opensearch.yml
+    secrets:
+      - indexer_key
+      - indexer_cert
+    networks:
+      - wazuh_net
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  wazuh.manager:
+    image: wazuh/wazuh-manager:4.12.0
+    secrets:
+      - authd_pass
+    networks:
+      - wazuh_net
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  wazuh.dashboard:
+    image: wazuh/wazuh-dashboard:4.12.0
+    ports:
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    configs:
+      - source: dashboard_config
+        target: /usr/share/wazuh-dashboard/config/wazuh_dashboard.yml
+    secrets:
+      - dashboard_cert
+      - dashboard_key
+    networks:
+      - wazuh_net
+    deploy:
+      mode: replicated
+      replicas: 1
+
+networks:
+  wazuh_net:
+    driver: overlay
+
+configs:
+  indexer_config:
+    file: ./configs/opensearch.yml
+  dashboard_config:
+    file: ./configs/wazuh_dashboard.yml
+
+secrets:
+  indexer_key:
+    external: true
+  indexer_cert:
+    external: true
+  authd_pass:
+    external: true
+  dashboard_cert:
+    external: true
+  dashboard_key:
+    external: true

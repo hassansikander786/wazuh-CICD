@@ -1,0 +1,5 @@
+secrets_list:
+  - name: indexer_key
+    data: "your_private_key_here"
+  - name: authd_pass
+    data: "your_password_here"
