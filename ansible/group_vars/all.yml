@@ -1,5 +1,11 @@
+# This content is encrypted using 'ansible-vault create all.yml'
 secrets_list:
-  - name: indexer_key
-    data: "your_private_key_here"
-  - name: authd_pass
-    data: "your_password_here"
+  authd_pass: "your_secure_password_here"
+  indexer_key: |
+    -----BEGIN PRIVATE KEY-----
+    YOUR_PRIVATE_KEY_CONTENT_HERE
+    -----END PRIVATE KEY-----
+  indexer_cert: |
+    -----BEGIN CERTIFICATE-----
+    YOUR_CERTIFICATE_CONTENT_HERE
+    -----END CERTIFICATE-----

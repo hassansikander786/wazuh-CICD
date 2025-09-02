@@ -1,17 +1,39 @@
 ---
 - name: Deploy Wazuh Stack to Docker Swarm
-  hosts: localhost  # Assuming you're deploying to the local Swarm
+  hosts: localhost  # Targets the local machine where the swarm manager runs
   connection: local
+  vars_files:
+    - ../group_vars/all.yml  # This file will be encrypted with ansible-vault
   tasks:
-    - name: Ensure overlay network exists
+    - name: Ensure Docker Swarm is initialized
+      community.docker.docker_swarm:
+        state: present
+        advertise_addr: "{{ ansible_default_ipv4.address }}"
+        listen_addr: "0.0.0.0:2377"
+      register: swarm_result
+
+    - name: Create an overlay network for Wazuh
       community.docker.docker_network:
         name: wazuh_net
         driver: overlay
+        attachable: yes
         scope: swarm
 
-    - name: Deploy Stack
+    - name: Create Docker secrets from Ansible Vault variables
+      community.docker.docker_secret:
+        name: "{{ item.key }}"
+        data: "{{ item.value }}"
+      loop: "{{ secrets_list | dict2items }}"
+      # This loops over a dictionary defined in your encrypted all.yml
+
+    - name: Deploy Wazuh stack using Docker Compose file
       community.docker.docker_stack:
         state: present
         name: wazuh
         compose:
-          - /home/your-user/wazuh-CICD/stack/wazuh-stack.yml
+          - "{{ github_workspace }}/stack/wazuh-stack.yml"  # Path to your stack file
+      register: stack_output
+
+    - name: Print deployment result
+      debug:
+        var: stack_output
